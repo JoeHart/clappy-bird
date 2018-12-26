@@ -27,7 +27,7 @@ PIXI.loader.add("bird", birdImage).load(setup);
 
 const gameLoop = delta => {
   bird.vy = 4.5;
-  bird.vy -= getMicVolume() / 5;
+  bird.vy -= (getMicVolume() / 5) * delta;
   bird.y += bird.vy;
 
   if (bird.y < 0) {
