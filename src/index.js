@@ -1,19 +1,23 @@
 import { setUpMicrophone, getMicVolume } from "./MicVolume";
 import * as PIXI from "pixi.js";
+import birdImage from "./assets/bird.png";
 
 setUpMicrophone();
 
-import birdImage from "./assets/bird.png";
-
 const app = new PIXI.Application();
-
+// Times in ms
 const MICROPHONE_SCALE = 1 / 5;
+const INITIAL_PILLAR_SPAWN_INTERVAL = 1000;
+const GRAVITY_VELOCITY = 4.5;
 
+let nextPillarSpawnTime = 0;
+let averagePillarSpawnInterval = INITIAL_PILLAR_SPAWN_INTERVAL;
+let pillarCount = 0;
 document.body.appendChild(app.view);
 
 let bird;
 
-const setup = (loader, resources) => {
+const setupBird = (loader, resources) => {
   bird = new PIXI.Sprite(resources.bird.texture);
 
   bird.width = 36 * 2;
@@ -25,12 +29,12 @@ const setup = (loader, resources) => {
   app.ticker.add(delta => gameLoop(delta));
 };
 
-PIXI.loader.add("bird", birdImage).load(setup);
+PIXI.loader.add("bird", birdImage).load(setupBird);
 
-const gameLoop = delta => {
-  const gravityVelocity = 4.5;
+const birdLogic = delta => {
   const boostFromSoundInput = getMicVolume() * MICROPHONE_SCALE * delta;
-  bird.vy = gravityVelocity - boostFromSoundInput;
+
+  bird.vy = GRAVITY_VELOCITY - boostFromSoundInput;
   bird.y += bird.vy;
 
   if (bird.y < 0) {
@@ -40,5 +44,14 @@ const gameLoop = delta => {
   if (bird.y > app.renderer.height) {
     // die
     bird.y = app.renderer.height;
+  }
+};
+
+const gameLoop = (delta, ctx) => {
+  birdLogic(delta);
+  const timeElapsed = app.ticker.lastTime;
+  if (timeElapsed > nextPillarSpawnTime) {
+    nextPillarSpawnTime = timeElapsed + averagePillarSpawnInterval;
+    pillarCount++;
   }
 };
