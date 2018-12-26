@@ -7,6 +7,8 @@ import birdImage from "./assets/bird.png";
 
 const app = new PIXI.Application();
 
+const MICROPHONE_SCALE = 1 / 5;
+
 document.body.appendChild(app.view);
 
 let bird;
@@ -26,8 +28,9 @@ const setup = (loader, resources) => {
 PIXI.loader.add("bird", birdImage).load(setup);
 
 const gameLoop = delta => {
-  bird.vy = 4.5;
-  bird.vy -= (getMicVolume() / 5) * delta;
+  const gravityVelocity = 4.5;
+  const boostFromSoundInput = getMicVolume() * MICROPHONE_SCALE * delta;
+  bird.vy = gravityVelocity - boostFromSoundInput;
   bird.y += bird.vy;
 
   if (bird.y < 0) {
